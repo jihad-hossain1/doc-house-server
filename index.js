@@ -24,20 +24,38 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         const docCollection = client.db('DocHouse').collection('addDoctor')
+        const userCollection = client.db('DocHouse').collection('users')
+
+
+
+        // user api
+        app.put('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body
+            const query = { email: email }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: user,
+            }
+            const result = await userCollection.updateOne(query, updateDoc, options)
+            console.log(result);
+            res.send(result)
+        })
+
 
         // doctor collection api
         app.get("/doctors", async (req, res) => {
-          const result = await docCollection.find().toArray();
-          res.send(result);
+            const result = await docCollection.find().toArray();
+            res.send(result);
         });
         // add a doctor
         app.post("/addADoctor", async (req, res) => {
-          const doc = req.body;
-          const result = await docCollection.insertOne(doc);
-          res.send(result);
+            const doc = req.body;
+            const result = await docCollection.insertOne(doc);
+            res.send(result);
         });
         // get a single doctor
         app.get('/doctor/:id', async (req, res) => {
