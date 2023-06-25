@@ -2,7 +2,7 @@ const express = require('express');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 const app = express()
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 5000;
 require('dotenv').config();
 
 // middleware 
@@ -27,7 +27,9 @@ async function run() {
         // await client.connect();
 
         const docCollection = client.db('DocHouse').collection('addDoctor')
+        const serviceCollection = client.db('DocHouse').collection('service')
         const userCollection = client.db('DocHouse').collection('users')
+        const cartCollection = client.db('DocHouse').collection('carts')
 
 
 
@@ -77,7 +79,25 @@ async function run() {
             res.send(result)
         })
 
+        // service collection api
+        app.get("/service", async (req, res) => {
+            const result = await serviceCollection.find().toArray();
+            res.send(result);
+        });
+        // add a service
+        app.post("/service", async (req, res) => {
+            const doc = req.body;
+            const result = await serviceCollection.insertOne(doc);
+            res.send(result);
+        });
 
+        // carts api 
+        app.post("/carts", async (req, res) => {
+            const item = req.body;
+            console.log(item);
+            const result = await cartCollection.insertOne(item);
+            res.send(result);
+        });
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
