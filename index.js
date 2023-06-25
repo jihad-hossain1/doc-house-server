@@ -98,6 +98,48 @@ async function run() {
             const result = await cartCollection.insertOne(item);
             res.send(result);
         });
+        // all added item
+        app.get("/carts", async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const result = await cartCollection.find(query).toArray();
+            res.send(result);
+        });
+        // all geting card delete one by one
+        app.delete("/carts/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await cartCollection.deleteOne(query);
+            res.send(result);
+        });
+        app.put('/carts/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const option = { upsert: true }
+            const updatedCart = req.body;
+            const cart = {
+                $set: {
+                    cname: updatedCart.cname,
+                    number: updatedCart.number,
+
+                }
+            }
+            const result = await cartCollection.updateOne(filter, cart, option)
+            res.send(result)
+
+        })
+        app.put('/cart/:id', async (req, res) => {
+            const id = req.params.id;
+            const item = req.body
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: item,
+            }
+            const result = await cartCollection.updateOne(filter, updateDoc, options)
+            console.log(result);
+            res.send(result)
+        })
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
