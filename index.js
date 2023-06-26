@@ -4,6 +4,7 @@ const cors = require('cors');
 const app = express()
 const port = process.env.PORT || 5000;
 require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_KEY)
 
 // middleware 
 app.use(cors())
@@ -30,9 +31,31 @@ async function run() {
         const serviceCollection = client.db('DocHouse').collection('service')
         const userCollection = client.db('DocHouse').collection('users')
         const cartCollection = client.db('DocHouse').collection('carts')
+        const bookingInfoCollection = client.db('DocHouse').collection('bookingInfo')
 
 
+        // payment api 
+        app.post("/create-payment-intent", async (req, res) => {
+            const { price } = req.body;
+            if (price) {
+                const amount = parseFloat(price) * 100
+                const paymentIntent = await stripe.paymentIntents.create({
+                    amount: amount,
+                    currency: "usd",
+                    payment_method_types: ['card'],
+                });
+                res.send({
+                    clientSecret: paymentIntent.client_secret,
+                });
 
+            }
+        });
+        // booking info 
+        app.post("/bookingInfo", async (req, res) => {
+            const doc = req.body;
+            const result = await bookingInfoCollection.insertOne(doc);
+            res.send(result);
+        });
         // user api
         app.put('/users/:email', async (req, res) => {
             const email = req.params.email;
