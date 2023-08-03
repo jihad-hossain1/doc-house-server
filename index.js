@@ -88,6 +88,44 @@ async function run() {
             const result = await userCollection.findOne(query)
             res.send(result)
         })
+        // user role 
+        app.patch('/users/admin/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    role: 'admin'
+                }
+            }
+            const result = await userCollection.updateOne(filter, updateDoc)
+            res.send(result)
+        })
+        app.patch('/users/instructor/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    role: 'instructor'
+                }
+            }
+            const result = await userCollection.updateOne(filter, updateDoc)
+            res.send(result)
+        })
+        // user base dashboard checking items
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const quary = { email: email };
+            const user = await userCollection.findOne(quary);
+            const result = { admin: user?.role === "admin" };
+            res.send(result)
+        })
+        app.get('/users/instructor/:email', async (req, res) => {
+            const email = req.params.email;
+            const quary = { email: email };
+            const user = await userCollection.findOne(quary);
+            const result = { instructor: user?.role === "instructor" };
+            res.send(result)
+        })
 
 
         // doctor collection api
